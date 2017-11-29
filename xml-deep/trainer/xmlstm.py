@@ -158,8 +158,8 @@ if __name__ == '__main__':
               validation_split=0.2)
     # Save model
     model.save('s2s.h5')
-    with file_io.FileIO('model.h5', mode='r') as input_f:
-        with file_io.FileIO(args.job_dir + '/model.h5', mode='w+') as output_f:
+    with file_io.FileIO('s2s.h5', mode='r') as input_f:
+        with file_io.FileIO(args.job_dir + '/s2s-model.h5', mode='w+') as output_f:
             output_f.write(input_f.read())
 
     # Next: inference mode (sampling).
