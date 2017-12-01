@@ -14,27 +14,16 @@ data Attribute = Attribute (AttrName, AttrVal) deriving (Show)
 
 data XML =  Element String [Attribute] [XML]
           | SelfClosingTag String [Attribute]
-          | Decl String
           | Body String
         deriving (Show)
 
 -- Parser
 
 document = do
-  spaces                     -- strip leading space
-  y <- (try xmlDecl <|> tag) -- we may start with an XML declaration or a tag
   spaces
   x <- many tag
   spaces
-  return (y : x)
-
-
-xmlDecl ::Parser XML
-xmlDecl = do
-  string "<?xml"
-  decl <- many (noneOf "?>")
-  string "?>"
-  return (Decl decl)
+  return x
 
 tag = do
   char '<'
@@ -78,17 +67,9 @@ formatAttr (Attribute (name, val)) = ":" ++ name ++ " \"" ++ val ++ "\""
 
 formatAttrs attrs = "{" ++ intercalate " " (map formatAttr attrs) ++ "}"
 
--- data XML =  Element String [Attribute] [XML]
---           | SelfClosingTag String [Attribute]
---           | Decl String
---           | Body String
---         deriving (Show)
-
-
 formatDocument doc = case doc of
   Element tag attrs children -> "[:" ++ tag ++ " " ++ (formatAttrs attrs) ++ " " ++ intercalate "" (map formatDocument children) ++ "]"
   SelfClosingTag tag attrs -> formatDocument $ Element tag attrs []
-  Decl decl -> decl
   Body txt -> txt
 
 example = "<foo bar=\"baz\">bar</foo>"
