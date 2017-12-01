@@ -152,10 +152,13 @@ if __name__ == '__main__':
 
     # Run training
     model.compile(optimizer='rmsprop', loss='categorical_crossentropy')
-    model.fit([encoder_input_data, decoder_input_data], decoder_target_data,
-              batch_size=batch_size,
-              epochs=epochs,
-              validation_split=0.2)
+    try:
+        model.fit([encoder_input_data, decoder_input_data], decoder_target_data,
+                  batch_size=batch_size,
+                  epochs=epochs,
+                  validation_split=0.2)
+    except Exception as e:
+        print("Training interruped: {0} !".format(e))
     # Save model
     model.save('s2s.h5')
     with file_io.FileIO('s2s.h5', mode='r') as input_f:
