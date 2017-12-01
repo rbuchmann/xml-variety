@@ -17,12 +17,6 @@ type node struct {
 	children []interface{}
 }
 
-func next(s *stream) byte {
-	res := s.input[s.pos]
-	s.pos++
-	return res
-}
-
 func peek(s *stream) byte {
 	return s.input[s.pos]
 }
@@ -58,9 +52,10 @@ func skip(s *stream, prefix string) bool {
 }
 
 func assertNext(s *stream, c string) {
-	if nxt := next(s); string(nxt) != c {
+	if nxt := string(peek(s)); nxt != c {
 		panic(fmt.Sprintf("Oh noes, expected %v but got %v", c, nxt))
 	}
+	s.pos++
 	s.start++
 }
 
@@ -69,13 +64,13 @@ func scanTag(s *stream) string {
 		if isDone(s) || strings.IndexByte(">/ ", peek(s)) >= 0 {
 			return slice(s)
 		}
-		next(s)
+		s.pos++
 	}
 }
 
 func scanAttr(s *stream) (string, string) {
 	for !isDone(s) && strings.IndexByte(" =", peek(s)) < 0 {
-		next(s)
+		s.pos++
 	}
 	key := slice(s)
 
@@ -85,7 +80,7 @@ func scanAttr(s *stream) (string, string) {
 
 	assertNext(s, "\"")
 	for !isDone(s) && string(peek(s)) != "\"" {
-		next(s)
+		s.pos++
 	}
 	value := slice(s)
 	assertNext(s, "\"")
@@ -115,7 +110,7 @@ func scanIsSelfClosing(s *stream) bool {
 
 func scanText(s *stream) string {
 	for !isDone(s) && string(peek(s)) != "<" {
-		next(s)
+		s.pos++
 	}
 	return slice(s)
 }
