@@ -21,28 +21,29 @@
 
 (s/def ::node (s/and (s/cat :tag ::tag
                             :attrs (s/? ::attr-map)
-                            :children (s/* (s/or :node ::node
-                                                 :txt-node ::txt-node)))
-                     #(< (count %) 5)))
+                            :children (s/? (s/or :node ::node
+                                                 :txt-node ::txt-node)))))
 
 (defn vectorize [node]
   (if (sequential? node)
     (mapv vectorize node)
     node))
 
-(def seq-size 1000)
+(def seq-size 200)
+
+(def header "<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
 
 (defn gen-pair []
-  (binding [s/*recursion-limit* 2]
+  (binding [s/*recursion-limit* 1]
     (let [sexp  (-> ::node
                     s/gen
                     gen/generate
                     vectorize)
           xml (-> sexp xml/sexp-as-element xml/emit-str)
           hiccups (binding [*print-length* nil] (pr-str sexp))]
-      (when (and (< (count xml) seq-size)
+      (when (and (< (- (count xml) (count header)) seq-size)
                  (< (count hiccups) seq-size))
-        [xml hiccups]))))
+        [(.substring xml (count header)) hiccups]))))
 
 (def format-pair (partial str/join \tab))
 
