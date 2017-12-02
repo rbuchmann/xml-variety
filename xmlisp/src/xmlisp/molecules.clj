@@ -24,14 +24,13 @@
   (with-meta (vec args)
     {:multi true}))
 
-(def reaction [a b]
+(defn reaction [a b]
   (match [a b]
          ;; Words
          [[:t* s1] [:t* s2]] [:t* (str s1 s2)]
-         [[:t* s] a] (multi [:word s] a)
-         [a [:t* s]] (multi a [:word s])
          [[:t* s1] [:word s2]] [:word (str s1 s2)]
-         [[:word s1] [:t* s2]] [:word (str s1 s2)]
+         [[:t* s] x] (multi [:word s] x)
+
 
          ;; Overall structure
          [:slash :end] :self-closing-end
@@ -40,24 +39,27 @@
          ;; Tags
          [:start [:word s]] [:opening-tag* s]
          [[:opening-tag* & stuff] :end] (into [:opening-tag] stuff)
-         [[:opening-tag* & stuff] :self-closing-end] (into [:opening-tag] stuff)
+         [[:opening-tag* & stuff] :self-closing-end] (into [:self-closing] stuff)
 
          ;; Attributes
          [:eq :quote] (multi :eq [:text*])
          [[:text* & s1] [:t* s2]] [:text* (str (first s1) s2)]
          [[:text* & s] :space] [:text* (str (first s) " ")]
+         [[:text* & s1] [:word s2]] [:text* (str (first s1) s2)]
          [[:text* & s] :quote] [:text (str (first s))]
+         [:eq [:text s]] [:attr-val s]
+         [[:word k] [:attr-val v]] [:attr k v]
 
          ;; Space removal
-         [a :space] a
-         [:space a] a
+         [x :space] x
+         [:space x] x
 
          :else nil))
 
 (defn react [a b]
   (when-some [result (reaction a b)]
     (cond-> result
-      (atomic? result) [result])))
+      (atomic? result) vector)))
 
 (defn react-step [l]
   (let [[before [a b & after]] (split-at (-> l count dec rand-int) l)
@@ -67,3 +69,10 @@
               result
               [a b])
             after)))
+
+(defn mix [s n]
+  (->> s
+       moleculize
+       (iterate react-step)
+       distinct
+       (take n)))
