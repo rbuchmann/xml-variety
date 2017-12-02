@@ -157,9 +157,9 @@ func formatAttrs(attrs map[string]string) string {
 	return fmt.Sprintf("{%v}", strings.Join(result, ","))
 }
 
-func formatNode(n node) string {
+func formatChildren(children []interface{}) []string {
 	formattedChildren := []string{}
-	for _, child := range n.children {
+	for _, child := range children {
 		switch v := child.(type) {
 		case node:
 			formattedChildren = append(formattedChildren, formatNode(v))
@@ -167,8 +167,12 @@ func formatNode(n node) string {
 			formattedChildren = append(formattedChildren, fmt.Sprintf("\"%v\"", v))
 		}
 	}
+	return formattedChildren
+}
+
+func formatNode(n node) string {
 	return fmt.Sprintf("[:%v %v %v]", n.tag, formatAttrs(n.attrs),
-		strings.Join(formattedChildren, " "))
+		strings.Join(formatChildren(n.children), " "))
 }
 
 const test = "<foo bar=\"baz\">qux<a href=\"blah\">blubs</a></foo>"
