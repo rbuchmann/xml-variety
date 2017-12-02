@@ -2,10 +2,10 @@
 
 This script demonstrates how to implement a basic character-level
 sequence-to-sequence model. We apply it to translating
-short English sentences into short French sentences,
-character-by-character. Note that it is fairly unusual to
-do character-level machine translation, as word-level
-models are more common in this domain.
+short xml snippets into short s-expressions,
+character-by-character.
+
+The code is adapted from https://blog.keras.io/a-ten-minute-introduction-to-sequence-to-sequence-learning-in-keras.html
 
 # Summary of the algorithm
 
